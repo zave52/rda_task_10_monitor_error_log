@@ -1,0 +1,68 @@
+name: Test
+
+on:
+  workflow_dispatch: 
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run the configuration tests
+      run: |
+        match=$(cat task.cnf | grep -P  '^port[\s\t]*=[\s\t]*3306' || true)
+        if [ -z "$match" ]; then 
+            echo "Unable to verify port configuration"
+            exit 1
+        else
+            echo "Port is set - OK"
+        fi
+
+        match=$(cat task.cnf | grep -P  '^datadir[\s\t]*=[\s\t]*/var/lib/mysql' || true)
+        if [ -z "$match" ]; then 
+            echo "Unable to verify data directory configuratoinr"
+            exit 1
+        else
+            echo "Data directory configuratoinr is set - OK"
+        fi
+
+        match=$(cat task.cnf | grep -P  '^bind-address[\s\t]*=[\s\t]*0\.0\.0\.0' || true)
+        if [ -z "$match" ]; then 
+            echo "Unable to verify bind address"
+            exit 1
+        else
+            echo "Bind address is set - OK"
+        fi
+
+        match=$(cat task.cnf | grep -P  '^max_connections[\s\t]*=[\s\t]*5' || true)
+        if [ -z "$match" ]; then 
+            echo "Unable to verify max allowed connections"
+            exit 1
+        else
+            echo "Max allowed connections is set - OK"
+        fi
+
+        match=$(cat task.cnf | grep -P  '^long_query_time[\s\t]*=[\s\t]*0' || true)
+        if [ -z "$match" ]; then 
+            echo "Unable to verify custom slow query time settings"
+            exit 1
+        else
+            echo "Slow query time setting is set - OK"
+        fi
+
+        match=$(cat task.cnf | grep -P  '^slow_query_log_file[\s\t]*=[\s\t]*/var/log/mysql/mysql-slow.log' || true)
+        if [ -z "$match" ]; then 
+            echo "Unable to verify slow query log settings"
+            exit 1
+        else
+            echo "Custom slow query log settingsis set - OK"
+        fi
